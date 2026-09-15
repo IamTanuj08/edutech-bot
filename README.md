@@ -8,7 +8,7 @@
 [![Vite](https://img.shields.io/badge/Vite-6-646CFF.svg?logo=vite&logoColor=white)](https://vitejs.dev)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB.svg?logo=python&logoColor=white)](https://www.python.org)
 
-> An autonomous, closed-loop educational content generation system built for GenAI Engineering. It retrieves authoritative knowledge, generates structured beginner-friendly lessons, strictly evaluates against 10 hard binary gates, logs failure patterns into persistent memory, and autonomously refines content until approved.
+> An autonomous, closed-loop educational content generation system built for GenAI Engineering. It supports pre-indexed curriculum knowledge as well as **dynamic topic-related PDF uploads**, generates structured beginner-friendly lessons, strictly evaluates against 10 hard binary gates, logs failure patterns into persistent memory, and autonomously refines content until approved.
 
 ---
 
@@ -20,8 +20,9 @@ Standard LLM pipelines suffer from three critical shortcomings when creating edu
 3. **No self-correction mechanism** — single-shot prompting either fails silently or ships subpar content.
 
 ### 💡 The Solution: Self-Evaluating Agentic Loop
-This system implements a production-grade **Generate → Evaluate → Reflect & Learn → Regenerate → Ship** state machine:
+This system implements a production-grade **Ingest/Upload → Retrieve → Generate → Evaluate → Reflect & Learn → Regenerate → Ship** state machine:
 - **Target Persona:** 12th-grade graduate with basic English proficiency and zero background in artificial intelligence.
+- **Dynamic Curriculum & PDF Ingestion:** Works with pre-indexed curriculum notes or dynamic user-uploaded reference PDFs (auto-extracted, chunked, and embedded).
 - **Strict Binary Evaluation:** 10 deterministic criteria. No partial credit. If even a single criterion fails, the lesson is rejected.
 - **Reflection & Episodic Memory:** Rejections are summarized into actionable feedback and written to ChromaDB memory. Subsequent runs and retries query this memory to prevent recurring mistakes.
 - **Termination Guarantee:** Enforces a hard retry limit ($\le 2$ retries) to guarantee state machine termination and prevent runaway execution costs.
@@ -32,11 +33,19 @@ This system implements a production-grade **Generate → Evaluate → Reflect & 
 
 ```mermaid
 flowchart TD
-    A[Learner Request / Topic] --> B[FastAPI Gateway]
+    subgraph Ingestion
+        A1[Enter Custom Topic] 
+        A2[Upload Topic-Related PDF] -->|POST /api/upload| P[Extract Text via pypdf]
+        P -->|Semantic Chunking ~500 chars| Q[MiniLM Embedding]
+        Q -->|Upsert Chunks| D[(ChromaDB: Knowledge Base)]
+    end
+
+    A1 --> B[FastAPI Gateway]
+    A2 -.->|Auto-fills Topic| B
     B --> C[LangGraph State Machine]
     
     subgraph Storage & Retrieval
-        D[(ChromaDB: Knowledge Base)] -->|Cosine Similarity / MiniLM| E[Retrieved Reference Context]
+        D -->|Cosine Similarity / MiniLM| E[Retrieved Reference Context]
         F[(ChromaDB: Agent Memory)] -->|Past Failures / Insights| G[Retrieved Memory Patterns]
     end
 
@@ -84,16 +93,21 @@ Every candidate lesson is audited against **10 strict binary gates**. There is z
 
 ## 🧠 Key Agentic Features
 
-### 1. Dual-Collection ChromaDB Architecture
-- **`knowledge_base` Collection:** Pre-indexed vector store containing curated, paraphrased notes derived from the original Lewis et al. RAG paper and Microsoft Azure AI architecture patterns, complete with source metadata.
+### 1. Dynamic PDF Upload & Knowledge Ingestion
+- In addition to pre-indexed data, learners and educators can upload arbitrary PDF course materials directly from the UI.
+- The backend parses the PDF via `pypdf`, splits text into semantic chunks (~500 chars with overlap), generates local MiniLM embeddings, and indexes them into ChromaDB in real time.
+- The suggested topic title is pre-filled, allowing instant lesson generation on custom documents.
+
+### 2. Dual-Collection ChromaDB Architecture
+- **`knowledge_base` Collection:** Vector store containing curriculum notes (Lewis et al. RAG paper, Microsoft Azure AI patterns) plus user-uploaded PDFs, with source metadata.
 - **`agent_memory` Collection:** Persistent episodic memory storing past generation failures, rubric critiques, and targeted instructions for future retries.
 
-### 2. Built-in Demo Error Injection
+### 3. Built-in Demo Error Injection
 - Toggleable via the UI or API (`demo_error: true`).
 - Injects an intentional technical term without defining it on Attempt 1.
 - Allows interviewers and evaluators to see the agent **catch its own failure in real time**, log the rejection, store it in memory, and regenerate an approved version on Attempt 2.
 
-### 3. Self-Healing JSON Engine
+### 4. Self-Healing JSON Engine
 - Groq structured generation with automated error recovery.
 - Automatic retry handlers and regex syntax repair to catch and heal edge-case LLM delimiter mistakes without crashing the API server.
 
@@ -105,7 +119,7 @@ Every candidate lesson is audited against **10 strict binary gates**. There is z
 edutech-bot/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py            # FastAPI endpoints (/health, /api/generate) & CORS
+│   │   ├── main.py            # FastAPI endpoints (/health, /api/upload, /api/generate)
 │   │   ├── workflow.py        # LangGraph iterative generation/evaluation orchestrator
 │   │   ├── agents.py          # Groq generator, evaluator, and memory reflection agents
 │   │   ├── store.py           # ChromaDB client & SentenceTransformer embedding layer
@@ -117,8 +131,9 @@ edutech-bot/
 │   └── requirements.txt       # Pip requirements specification
 ├── frontend/
 │   ├── src/
-│   │   ├── main.tsx           # React UI with interactive generation & audit logs
-│   │   └── style.css          # Dark-mode dashboard styling
+│   │   ├── main.tsx           # React UI with PDF upload, interactive generation & audit logs
+│   │   ├── style.css          # Dark-mode dashboard styling
+│   │   └── vite-env.d.ts      # Vite type declarations
 │   ├── package.json           # Frontend dependencies (React, Vite, Lucide)
 │   └── vite.config.ts         # Vite bundler configuration
 ├── data/
@@ -126,7 +141,9 @@ edutech-bot/
 │   └── chroma/                # Persistent vector database store
 ├── docs/
 │   ├── SUBMISSION.md          # Project design decisions & trade-offs
-│   └── LOOM_SCRIPT.md         # Video walkthrough recording outline
+│   ├── LOOM_SCRIPT.md         # Video walkthrough recording outline
+│   ├── NOTION_DOCUMENTATION.txt   # Notion-ready documentation
+│   └── GOOGLE_DOCS_DOCUMENTATION.txt # Google Docs-ready documentation
 ├── docker-compose.yml         # Full-stack container orchestration
 ├── .env.example               # Environment template
 └── README.md                  # Project documentation
@@ -140,7 +157,7 @@ edutech-bot/
 - **Python 3.11+**
 - **Node.js 18+** & **npm**
 - **Groq API Key** ([console.groq.com](https://console.groq.com))
-- *(Optional)* **Hugging Face Access Token** for authenticated fast model downloads
+- *(Optional)* **Hugging Face Access Token** for authenticated model downloads
 
 ---
 
@@ -269,6 +286,51 @@ docker compose up --build
    - **Final Approval:** Evaluator passes the corrected draft and ships the lesson.
    - **Audit View:** The UI displays the full rejection log, showing what failed and what was changed.
 
+### 3. Dynamic PDF Upload Test
+1. Click **"Upload topic-related PDF"** in the UI.
+2. Select any domain-specific PDF (e.g. quantum computing, biology, cloud architecture).
+3. Notice the UI displays `Indexed: <file> (<N> chunks)` and auto-fills the topic name.
+4. Click **"Generate lesson"**.
+5. **Expected Result:**
+   - System retrieves chunks specifically from the newly uploaded PDF.
+   - Generates a grounded lesson evaluated against the 10 gates.
+   - Ships an approved lesson tailored to the custom document.
+
+---
+
+## 📡 API Reference
+
+### 1. `GET /health`
+Returns system health and document counts.
+```json
+{
+  "status": "ok",
+  "knowledge_documents": 11,
+  "memory_documents": 3
+}
+```
+
+### 2. `POST /api/upload`
+Uploads, extracts, chunks, and indexes a PDF file (`multipart/form-data`).
+```json
+{
+  "status": "ok",
+  "filename": "quantum_computing.pdf",
+  "topic_suggested": "Quantum Computing",
+  "chunks_ingested": 4,
+  "total_knowledge_docs": 15
+}
+```
+
+### 3. `POST /api/generate`
+Executes the closed-loop generation, evaluation, and reflection workflow.
+```json
+{
+  "topic": "Introduction to RAG",
+  "demo_error": false
+}
+```
+
 ---
 
 ## ⚙️ Technical Decisions & Trade-offs
@@ -279,7 +341,9 @@ docker compose up --build
    *Trade-off:* Scalar scores (e.g., "7/10") introduce ambiguity and threshold drifting. Binary PASS/FAIL gates with required evidence provide strict quality controls suitable for production pipelines.
 3. **Local Embedding (`all-MiniLM-L6-v2`) via SentenceTransformers:**  
    *Trade-off:* Zero cost and zero external network latency for vector search, keeping embeddings reproducible and offline-capable.
-4. **ChromaDB Dual Collections:**  
+4. **Lightweight `pypdf` vs Heavy OCR/Poppler Pipelines:**  
+   *Trade-off:* `pypdf` is a pure-Python library with zero external system binaries, allowing instant Docker and local deployment without complex OS dependencies.
+5. **ChromaDB Dual Collections:**  
    *Trade-off:* Separating domain facts (`knowledge_base`) from operational learnings (`agent_memory`) prevents prompt pollution while enabling memory-guided self-improvement.
 
 ---

@@ -8,8 +8,10 @@ dependencies = [
     "groq>=1.7.0",
     "langgraph>=1.2.11",
     "pydantic>=2.13.5",
+    "pypdf>=6.18.1",
     "pytest>=9.1.1",
     "python-dotenv>=1.2.3",
+    "python-multipart>=0.0.32",
     "sentence-transformers>=6.0.1",
     "uvicorn[standard]>=0.53.0",
 ]
