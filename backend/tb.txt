@@ -1,0 +1,33 @@
+Traceback (most recent call last):
+  File "<string>", line 6, in <module>
+    run(store, 'RAG', False)
+    ~~~^^^^^^^^^^^^^^^^^^^^^
+  File "D:\DOWNLOADS\rag-content-agent\rag-content-agent\backend\app\workflow.py", line 13, in run
+    memory=store.search('previous failures for '+topic,5,store.mem)
+  File "D:\DOWNLOADS\rag-content-agent\rag-content-agent\backend\app\store.py", line 20, in search
+    r=col.query(query_texts=[q],n_results=min(k,col.count()))
+  File "D:\DOWNLOADS\rag-content-agent\rag-content-agent\backend\.venv\Lib\site-packages\chromadb\api\models\Collection.py", line 253, in query
+    query_request = self._validate_and_prepare_query_request(
+        query_embeddings=query_embeddings,
+    ...<7 lines>...
+        include=include,
+    )
+  File "D:\DOWNLOADS\rag-content-agent\rag-content-agent\backend\.venv\Lib\site-packages\chromadb\api\models\CollectionCommon.py", line 103, in wrapper
+    return func(self, *args, **kwargs)
+  File "D:\DOWNLOADS\rag-content-agent\rag-content-agent\backend\.venv\Lib\site-packages\chromadb\api\models\CollectionCommon.py", line 336, in _validate_and_prepare_query_request
+    request_embeddings = self._embed_record_set(
+        record_set=query_records, is_query=True
+    )
+  File "D:\DOWNLOADS\rag-content-agent\rag-content-agent\backend\.venv\Lib\site-packages\chromadb\api\models\CollectionCommon.py", line 736, in _embed_record_set
+    return self._embed(
+           ~~~~~~~~~~~^
+        input=record_set[field],  # type: ignore[literal-required]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        is_query=is_query,
+        ^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\DOWNLOADS\rag-content-agent\rag-content-agent\backend\.venv\Lib\site-packages\chromadb\api\models\CollectionCommon.py", line 751, in _embed
+    return self._embedding_function.embed_query(input=input)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Embedder' object has no attribute 'embed_query' in query.

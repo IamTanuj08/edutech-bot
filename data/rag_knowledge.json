@@ -1,0 +1,92 @@
+[
+    {
+        "id": "rag1",
+        "content": "RAG means Retrieval-Augmented Generation. A RAG system retrieves useful information from an external collection and gives that information to a language model before the model generates an answer. It combines learned model knowledge with retrieved information.",
+        "metadata": {
+            "title": "RAG fundamentals",
+            "source_url": "https://arxiv.org/abs/2005.11401",
+            "topic": "definition"
+        }
+    },
+    {
+        "id": "rag2",
+        "content": "RAG is useful when an application needs information that may not be reliably stored in a model's learned parameters or when the application needs to use a controlled external knowledge source.",
+        "metadata": {
+            "title": "Why retrieval is useful",
+            "source_url": "https://arxiv.org/abs/2005.11401",
+            "topic": "motivation"
+        }
+    },
+    {
+        "id": "rag3",
+        "content": "A simple RAG flow is: receive a question, search a knowledge collection, retrieve relevant information, place that information into the model context, and generate an answer using the retrieved context.",
+        "metadata": {
+            "title": "Basic RAG workflow",
+            "source_url": "https://learn.microsoft.com/azure/architecture/ai-ml/guide/rag/rag-information-retrieval",
+            "topic": "workflow"
+        }
+    },
+    {
+        "id": "rag4",
+        "content": "Chunking means breaking documents into smaller pieces. Smaller meaningful chunks can make retrieval more focused than passing a whole large document. Poor chunking can reduce retrieval quality or include irrelevant information.",
+        "metadata": {
+            "title": "Chunking",
+            "source_url": "https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/rag/rag-chunking-phase",
+            "topic": "chunking"
+        }
+    },
+    {
+        "id": "rag5",
+        "content": "An embedding is a numerical representation of text. A vector database can store these representations and help find text that is similar in meaning to a query. For beginners, an embedding can be thought of as numbers representing useful aspects of meaning.",
+        "metadata": {
+            "title": "Embeddings and vector search",
+            "source_url": "https://learn.microsoft.com/azure/architecture/ai-ml/guide/rag/rag-information-retrieval",
+            "topic": "embeddings"
+        }
+    },
+    {
+        "id": "rag6",
+        "content": "Retrieval quality matters because the generation step depends on the evidence it receives. Retrieval can use keyword search, vector search, or hybrid approaches. Irrelevant retrieved information can reduce answer quality.",
+        "metadata": {
+            "title": "Retrieval quality",
+            "source_url": "https://learn.microsoft.com/azure/architecture/ai-ml/guide/rag/rag-information-retrieval",
+            "topic": "retrieval"
+        }
+    },
+    {
+        "id": "rag7",
+        "content": "A grounded generation prompt asks the model to use retrieved context as evidence. If the retrieved information does not contain enough evidence, the system should handle that situation rather than forcing an invented answer.",
+        "metadata": {
+            "title": "Grounding",
+            "source_url": "https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/rag/rag-prompt-engineering",
+            "topic": "grounding"
+        }
+    },
+    {
+        "id": "rag8",
+        "content": "RAG preparation includes defining the domain, gathering representative content, and gathering representative questions. The questions should be answerable using the chosen content. Poor source content can lead to poor retrieval and poor answers.",
+        "metadata": {
+            "title": "RAG preparation",
+            "source_url": "https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/rag/rag-preparation-phase",
+            "topic": "data"
+        }
+    },
+    {
+        "id": "rag9",
+        "content": "Simple example: a company has a leave-policy document. A user asks how many paid leave days employees receive. A RAG system can retrieve the relevant policy section and provide it to the language model so the answer is based on that document.",
+        "metadata": {
+            "title": "Beginner example",
+            "source_url": "https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/rag/rag-preparation-phase",
+            "topic": "example"
+        }
+    },
+    {
+        "id": "rag10",
+        "content": "RAG does not guarantee that every generated answer is correct. Retrieval can fail, retrieved content can be incomplete, or a model can misunderstand context. Evaluation should therefore consider retrieval and generation quality.",
+        "metadata": {
+            "title": "RAG limitations",
+            "source_url": "https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/rag/rag-preparation-phase",
+            "topic": "limitations"
+        }
+    }
+]

@@ -1,0 +1,1 @@
+{"detail":"'Embedder' object has no attribute 'embed_query' in query."}
